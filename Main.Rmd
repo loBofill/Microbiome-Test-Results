@@ -1,0 +1,28 @@
+---
+title: "Main"
+author: "Xavi Martí Bofill"
+date: "23/11/2017"
+output: pdf_document
+---
+
+Dependencies
+```{r setup, include=FALSE}
+library(gdata)
+library(dplyr)
+library(knitr)
+library(xlsx)
+
+source('./Utils/Utils.R')
+source('./Utils/bacteriaLists.R')
+```
+
+LOAD DATA
+```{r load}
+setwd('Data')
+reportId <- "20171108"
+files <- loadData(reportId)
+reportData <- getReportData(files)
+```
+
+MERGE DATA
+
