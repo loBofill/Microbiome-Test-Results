@@ -3,9 +3,7 @@ phylums <- c("Bacteroidetes",
                 "Proteobacteria",
                 "Actinobacteria",
                 "Verrucomicrobia",
-                "Fusobacteria",
-                "Archaea:Bacteria",
-                "Firmicutes:Bacteroides")
+                "Fusobacteria")
 
 bacteroidetesFamilies <- c("Bacteroidaceae",
                            "Porphyromonadaceae",
@@ -39,7 +37,7 @@ bacteroidetesGeneras <- c("Bacteroides",
 
 firmicutesGeneras <- c("Dorea",
                        "Blautia",
-                       "Butyvibrio",
+                       "Butyrivibrio",
                        "Roseburia",
                        "Faecalibacterium",
                        "Ruminococcus",
@@ -52,11 +50,17 @@ firmicutesGeneras <- c("Dorea",
                        "Streptococcus",
                        "Lactobacillus")
 
-proteobacteriaGeneras <- c("Escherichia/Shigella",
+proteobacteriaGeneras <- list(c("Escherichia","Shigella"),
                            "Klebsiella",
                            "Desulfovibrio",
                            "Campylobacter",
                            "Haemophilus")
+
+names(proteobacteriaGeneras) <- c("Escherichia/Shigella",
+                                  "Klebsiella",
+                                  "Desulfovibrio", 
+                                  "Campylobacter",
+                                  "Haemophilus")
 
 actinobacteriaGeneras <- c("Collinsella",
                            "Bifidobacterium")

@@ -1,3 +1,5 @@
+source('./Utils/referenceLevels.R')
+
 loadData <- function(reportId) {
     unzip(paste(reportId, ".zip", sep = ""), exdir = reportId)
     
@@ -5,6 +7,7 @@ loadData <- function(reportId) {
     phylumData <- read.xlsx2(paste("Phylum/", list.files("Phylum")[3], sep = ""), sheetIndex = 1, stringsAsFactors = FALSE)
     familyData <- read.xlsx2(paste("Family/", list.files("Family")[3], sep = ""), sheetIndex = 1, stringsAsFactors = FALSE)
     generaData <- read.xlsx2(paste("Genera/", list.files("Genera")[3], sep = ""), sheetIndex = 1, stringsAsFactors = FALSE)
+    setwd('./../..')
     
     dfs <- list(phylumData, familyData, generaData)
     for(i in 1:length(dfs)){ dfs[[i]] <- cleanData(dfs[[i]]) }
@@ -19,17 +22,35 @@ cleanData <- function(data) {
     return(data)
 }
 
-loadReferences <- function() {
-    phylumReferences <- 
-    picrust <- read.xlsx2("PICRUST SUMMARY ALL.xlsx", sheetIndex = 1, stringsAsFactors = FALSE) %>% select(-REF.VALUES)
-    simptoms <- read.csv2("simptomesGT simple.csv", stringsAsFactors = FALSE)
-    simptoms$X <- gsub(" ", "", simptoms$X)
-}
-
-percentile <- function(x,perc) ecdf(x)(perc)
-
-loadPicrustData <- function(reportId) {
-    setwd(paste(reportId, "/Organism_Comparison", sep = ""))
-    unzip("Picrust.zip")
-    #unlink("Picrust.zip")
+generateReportData <- function(files) {
+    phylumResults <- getPhylumLevels(files[[1]], files[[3]])
+    familyResults <- getFamilyLevels(files[[2]])
+    clusterResults <- getClusterLevels(files[[2]])
+    generaResults <- getGeneraLevels(files[[3]])
+    
+    archaeaBacteriaRow <- which(phylumResults[[1]]$name == "Archaea:Bacteria")
+    firmicutesBacteroidesRow <- which(phylumResults[[1]]$name == "Firmicutes:Bacteroides")
+    phylumResults[[1]][-c(archaeaBacteriaRow, firmicutesBacteroidesRow), -1] <- sapply(phylumResults[[1]][-c(archaeaBacteriaRow, firmicutesBacteroidesRow), -1], function(x) as.character(percent(x/100)))
+    phylumResults[[1]][archaeaBacteriaRow, -1] <- sapply(phylumResults[[1]][archaeaBacteriaRow, -1], function(x) as.character(digits(x, 5, format = 'f')))
+    phylumResults[[1]][firmicutesBacteroidesRow, -1] <- sapply(phylumResults[[1]][firmicutesBacteroidesRow, -1], function(x) as.character(digits(x, 2, format = 'f')))
+    familyResults[[1]][, -1] <- sapply(familyResults[[1]][, -1], function(x) as.character(percent(x/100)))
+    clusterResults[[1]][, -1] <- sapply(clusterResults[[1]][, -1], function(x) as.character(percent(x/100)))
+    generaResults[[1]][, -1] <- sapply(generaResults[[1]][, -1], function(x) as.character(percent(x/100)))
+    
+    report <- rbind(phylumResults[[1]],
+                    phylumResults[[2]],
+                    familyResults[[1]],
+                    familyResults[[2]],
+                    clusterResults[[1]],
+                    clusterResults[[2]],
+                    generaResults[[1]],
+                    generaResults[[2]])
+    
+    write.table(report,
+               file = paste0(reportId, "/", reportId, " Data.csv"),
+               quote = FALSE,
+               dec = ".",
+               sep = ";",
+               eol = "\r",
+               row.names = FALSE)
 }

@@ -1,3 +1,4 @@
+source('./Utils/bacteriaLists.R')
 
 LEVEL_NAMES <- c("BAJO", "NORMAL/BAJO", "NORMAL", "NORMAL/ALTO", "ALTO")
 
@@ -6,9 +7,11 @@ getPhylumLevels <- function(phylumData, generaData) {
     phylumDataFiltered <- filterAndRound(phylumData, phylums)
     
     archaeaBacteriaData <- sapply(filter(generaData, name %in% archaeaGeneras)[,-1], sum)
-    archaeaBacteria <- c(name = phylums[7], round(archaeaBacteriaData / (100 - archaeaBacteriaData),5))
+    archaeaBacteria <- c(name = "Archaea:Bacteria", 
+                         archaeaBacteriaData / (100 - archaeaBacteriaData))
     
-    firmicutesBacteroidetes <- c(name = phylums[8], round(phylumDataFiltered[2,-1] / phylumDataFiltered[1,-1], 2))
+    firmicutesBacteroidetes <- c(name = "Firmicutes:Bacteroides", 
+                                 phylumDataFiltered[2,-1] / phylumDataFiltered[1,-1])
     
     phylumDataFinal <- rbind(phylumDataFiltered, archaeaBacteria, firmicutesBacteroidetes)
     phylumDataFinal[,-1] <- apply(phylumDataFinal[,-1], 2, function(x) as.numeric(x))
@@ -17,7 +20,7 @@ getPhylumLevels <- function(phylumData, generaData) {
     names(phylumReferences) <- c("name", LEVEL_NAMES)
     phylumLevels <- getLevels(phylumDataFinal, phylumReferences)
     
-    return(rbind(phylumDataFinal, phylumLevels))
+    return(list(phylumDataFinal, phylumLevels))
 }
 
 getFamilyLevels <- function(familyData) {
@@ -28,7 +31,7 @@ getFamilyLevels <- function(familyData) {
     names(familyReferences) <- c("name", LEVEL_NAMES)
     familyLevels <- getLevels(familyDataFiltered, familyReferences)
     
-    return(rbind(familyDataFiltered, familyLevels))
+    return(list(familyDataFiltered, familyLevels))
 }
 
 getClusterLevels <- function(familyData) {
@@ -48,7 +51,7 @@ getClusterLevels <- function(familyData) {
     names(clusterReferences) <- c("name", LEVEL_NAMES)
     clusterLevels <- getLevels(clusterData, clusterReferences)
     
-    return(rbind(clusterData, clusterLevels))
+    return(list(clusterData, clusterLevels))
 }
 
 getGeneraLevels <- function(generaData) {
@@ -59,13 +62,19 @@ getGeneraLevels <- function(generaData) {
     names(generaReferences) <- c("name", LEVEL_NAMES)
     generaLevels <- getLevels(generaDataFiltered, generaReferences)
     
-    return(rbind(generaDataFiltered, generaLevels))
+    return(list(generaDataFiltered, generaLevels))
 }
 
 filterAndRound <- function(data, groupNames) {
-    dataFiltered <- data %>% filter(name %in% groupNames)
+    dataFiltered <- data %>% filter(name %in% groupNames) %>% na.omit()
+    missing <- groupNames[!(groupNames %in% dataFiltered$name)]
+    if (length(missing) > 0) {
+        for (i in length(missing)) {
+            dataFiltered[nrow(dataFiltered) + 1,] <- as.list(c(missing[i], rep(0, ncol(dataFiltered) - 1)))
+        }
+    }
     dataFiltered <- dataFiltered[match(groupNames, dataFiltered$name),]
-    dataFiltered[,-1] <- round(dataFiltered[,-1], 2)
+    dataFiltered[,-1] <- apply(dataFiltered[,-1], 2, function(x) as.numeric(x))
     return(dataFiltered)
 }
 

@@ -7,13 +7,12 @@ output: pdf_document
 
 Dependencies
 ```{r setup, include=FALSE}
-library(gdata)
 library(dplyr)
 library(knitr)
 library(xlsx)
+library(formattable)
 
 source('./Utils/Utils.R')
-source('./Utils/bacteriaLists.R')
 ```
 
 LOAD DATA
@@ -21,7 +20,7 @@ LOAD DATA
 setwd('Data')
 reportId <- "20171108"
 files <- loadData(reportId)
-reportData <- getReportData(files)
+generateReportData(files)
 ```
 
 MERGE DATA
