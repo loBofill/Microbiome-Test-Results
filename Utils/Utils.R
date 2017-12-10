@@ -1,4 +1,5 @@
 source('./Utils/referenceLevels.R')
+source('./Utils/simptomsAssociation.R')
 
 loadData <- function(reportId) {
     unzip(paste(reportId, ".zip", sep = ""), exdir = reportId)
@@ -28,6 +29,11 @@ generateReportData <- function(files) {
     clusterResults <- getClusterLevels(files[[2]])
     generaResults <- getGeneraLevels(files[[3]])
     
+    simptomsAssociation <- getDiseaseProbabilities(rbind(phylumResults[[2]],
+                                                         familyResults[[2]],
+                                                         clusterResults[[2]],
+                                                         generaResults[[2]]))
+    
     archaeaBacteriaRow <- which(phylumResults[[1]]$name == "Archaea:Bacteria")
     firmicutesBacteroidesRow <- which(phylumResults[[1]]$name == "Firmicutes:Bacteroides")
     phylumResults[[1]][-c(archaeaBacteriaRow, firmicutesBacteroidesRow), -1] <- sapply(phylumResults[[1]][-c(archaeaBacteriaRow, firmicutesBacteroidesRow), -1], function(x) as.character(percent(x/100)))
@@ -44,7 +50,8 @@ generateReportData <- function(files) {
                     clusterResults[[1]],
                     clusterResults[[2]],
                     generaResults[[1]],
-                    generaResults[[2]])
+                    generaResults[[2]],
+                    simptomsAssociation)
     
     write.table(report,
                file = paste0(reportId, "/", reportId, " Data.csv"),
@@ -53,4 +60,6 @@ generateReportData <- function(files) {
                sep = ";",
                eol = "\r",
                row.names = FALSE)
+    
+    return(report)
 }
