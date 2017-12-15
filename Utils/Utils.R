@@ -4,11 +4,14 @@ source('./Utils/simptomsAssociation.R')
 loadData <- function(reportId) {
     unzip(paste(reportId, ".zip", sep = ""), exdir = reportId)
     
-    setwd(paste(reportId, "/Organism_Comparison", sep = ""))
-    phylumData <- read.xlsx2(paste("Phylum/", list.files("Phylum")[3], sep = ""), sheetIndex = 1, stringsAsFactors = FALSE)
-    familyData <- read.xlsx2(paste("Family/", list.files("Family")[3], sep = ""), sheetIndex = 1, stringsAsFactors = FALSE)
-    generaData <- read.xlsx2(paste("Genera/", list.files("Genera")[3], sep = ""), sheetIndex = 1, stringsAsFactors = FALSE)
-    setwd('./../..')
+    setwd(paste(reportId,"/", reportId, "/Organism_Comparison", sep = ""))
+    phylumFileNumber <- grep("xlsx", list.files("Phylum"))
+    familyFileNumber <- grep("xlsx", list.files("Family"))
+    generaFileNumber <- grep("xlsx", list.files("Genera"))
+    phylumData <- read.xlsx2(paste("Phylum/", list.files("Phylum")[phylumFileNumber], sep = ""), sheetIndex = 1, stringsAsFactors = FALSE)
+    familyData <- read.xlsx2(paste("Family/", list.files("Family")[familyFileNumber], sep = ""), sheetIndex = 1, stringsAsFactors = FALSE)
+    generaData <- read.xlsx2(paste("Genera/", list.files("Genera")[generaFileNumber], sep = ""), sheetIndex = 1, stringsAsFactors = FALSE)
+    setwd(paste0(strsplit(getwd(), "Microbiome")[[1]][1], "Microbiome-Test-Results/Data"))
     
     dfs <- list(phylumData, familyData, generaData)
     for(i in 1:length(dfs)){ dfs[[i]] <- cleanData(dfs[[i]]) }
