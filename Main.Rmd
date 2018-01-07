@@ -18,7 +18,7 @@ source('./Utils/Utils.R')
 LOAD DATA
 ```{r load}
 setwd('Data')
-reportId <- "20171108"
+reportId <- "P_172064_173822-173825"
 files <- loadData(reportId)
 report <- generateReportData(files)
 ```

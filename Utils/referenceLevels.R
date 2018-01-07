@@ -57,6 +57,12 @@ getClusterLevels <- function(familyData) {
 getGeneraLevels <- function(generaData) {
     
     generaDataFiltered <- filterAndRound(generaData, unlist(generas, use.names = FALSE))
+    escherichiaShigella <- c('Escherichia/Shigella', sapply(filter(generaDataFiltered, name %in% generas$Proteobacteria$`Escherichia/Shigella`)[,-1], sum))
+    escherichiaIndex <- which(generaDataFiltered$name == "Escherichia")
+    generaDataFiltered <- rbind(generaDataFiltered[1 : escherichiaIndex - 1,], 
+                                escherichiaShigella, 
+                                generaDataFiltered[(escherichiaIndex + 2) : nrow(generaDataFiltered), ])
+    generaDataFiltered[,-1] <- apply(generaDataFiltered[,-1], 2, function(x) as.numeric(x))
     
     generaReferences <- read.xlsx2("VALORS REF.xlsx", sheetIndex = 5, stringsAsFactors = FALSE)
     names(generaReferences) <- c("name", LEVEL_NAMES)
@@ -69,12 +75,13 @@ filterAndRound <- function(data, groupNames) {
     dataFiltered <- data %>% filter(name %in% groupNames) %>% na.omit()
     missing <- groupNames[!(groupNames %in% dataFiltered$name)]
     if (length(missing) > 0) {
-        for (i in length(missing)) {
+        for (i in 1:length(missing)) {
             dataFiltered[nrow(dataFiltered) + 1,] <- as.list(c(missing[i], rep(0, ncol(dataFiltered) - 1)))
         }
     }
     dataFiltered <- dataFiltered[match(groupNames, dataFiltered$name),]
     dataFiltered[,-1] <- apply(dataFiltered[,-1], 2, function(x) as.numeric(x))
+    rownames(dataFiltered) <- NULL
     return(dataFiltered)
 }
 

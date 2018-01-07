@@ -50,7 +50,7 @@ firmicutesGeneras <- c("Dorea",
                        "Streptococcus",
                        "Lactobacillus")
 
-proteobacteriaGeneras <- list(c("Escherichia","Shigella"),
+proteobacteriaGeneras <- list('Escherichia/Shigella' = c("Escherichia","Shigella"),
                            "Klebsiella",
                            "Desulfovibrio",
                            "Campylobacter",
