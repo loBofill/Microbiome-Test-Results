@@ -18,9 +18,10 @@ source('./Utils/Utils.R')
 LOAD DATA
 ```{r load}
 setwd('Data')
-reportId <- "P_172064_173822-173825"
-files <- loadData(reportId)
-report <- generateReportData(files)
+namePosition <- 2
+reportId <- "P_182115-181586-191330"
+files <- loadData(reportId, namePosition)
+report <- generateReportData(files, namePosition)
 ```
 
 MERGE DATA

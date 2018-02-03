@@ -2,8 +2,9 @@ library(data.table)
 
 source('./Utils/referenceLevels.R')
 source('./Utils/simptomsAssociation.R')
+source('./Utils/piCrustPercentiles.R')
 
-loadData <- function(reportId) {
+loadData <- function(reportId, namePosition) {
     unzip(paste(reportId, ".zip", sep = ""), exdir = reportId)
     
     setwd(paste(reportId,"/", reportId, "/Organism_Comparison", sep = ""))
@@ -15,22 +16,24 @@ loadData <- function(reportId) {
     generaData <- read.xlsx2(paste("Genera/", list.files("Genera")[generaFileNumber], sep = ""), sheetIndex = 1, stringsAsFactors = FALSE)
     setwd(paste0(strsplit(getwd(), "Microbiome")[[1]][1], "Microbiome-Test-Results/Data"))
     
-    piCrustResults <- fread(paste0(reportId,"/", reportId, "/","Picrust","/","3_predicted_metagenomes.txt"))
+    piCrustResults <- data.frame(fread(paste0(reportId,"/", reportId, "/","Picrust","/","3_predicted_metagenomes.txt")))
     
     dfs <- list(phylumData, familyData, generaData, piCrustResults)
-    for(i in 1:3){ dfs[[i]] <- cleanData(dfs[[i]]) }
+    for(i in 1:3){ dfs[[i]] <- cleanData(dfs[[i]], namePosition) }
     
     return(dfs)
 }
 
-cleanData <- function(data) {
-    names(data)[-1] <- lapply(strsplit(names(data)[-1], "\\."), function(x) x[4])
+cleanData <- function(data, namePosition) {
+    names(data)[-1] <- sapply(names(data)[-1], function(x) 
+        ifelse(length(strsplit(x, "-")[[1]]) > 1, strsplit(x, "-")[[1]][namePosition], 
+               ifelse(length(strsplit(x, "\\.")[[1]]) > 1, strsplit(x, "\\.")[[1]][namePosition], x)))
     data[, -1] <- lapply(data[, -1], as.numeric)
     data$name <- gsub('\\[[0-9]\\]+', '', as.character(data$name))
     return(data)
 }
 
-generateReportData <- function(files) {
+generateReportData <- function(files, namePosition) {
     phylumResults <- getPhylumLevels(files[[1]], files[[3]])
     familyResults <- getFamilyLevels(files[[2]])
     clusterResults <- getClusterLevels(files[[2]])
@@ -47,8 +50,10 @@ generateReportData <- function(files) {
     clusterResults[[1]][, -1] <- sapply(clusterResults[[1]][, -1], function(x) as.character(percent(x/100)))
     generaResults[[1]][, -1] <- sapply(generaResults[[1]][, -1], function(x) as.character(percent(x/100)))
     
-    piCrustPercentiles <- getPiCrustPercentiles(files[[4]])
-    names(piCrustPercentiles) <- names(simptomsAssociation)
+    piCrustPercentiles <- getPiCrustPercentiles(files[[4]], namePosition)
+    names(piCrustPercentiles) <- c("name", gsub("X", "", names(piCrustPercentiles[-1])))
+    
+    piCrustPercentiles <- piCrustPercentiles %>% removeXenobioticsName
     
     report <- rbind(phylumResults[[1]], phylumResults[[2]],
                     familyResults[[1]], familyResults[[2]],
@@ -56,12 +61,10 @@ generateReportData <- function(files) {
                     generaResults[[1]], generaResults[[2]],
                     simptomsAssociation, piCrustPercentiles)
     
-    write.table(report,
+    write.csv2(report,
                file = paste0(reportId, "/", reportId, " Data.csv"),
                quote = FALSE,
                dec = ".",
-               sep = ";",
-               eol = "\r",
                row.names = FALSE)
     
     return(report)
@@ -78,5 +81,15 @@ preparePhylumResults <- function(phylumResults) {
     phylumResults[[1]][firmicutesBacteroidesRow, -1] <- sapply(phylumResults[[1]][firmicutesBacteroidesRow, -1], 
                                                                function(x) as.character(digits(x, 2, format = 'f')))
     return(phylumResults)
+}
+
+removeXenobioticsName <- function(data) {
+    xenobioticsRow <- grepl("Xenobiotics", data$name)
+    
+    xenobioTicsName <- data$name[xenobioticsRow]
+    
+    data$name[xenobioticsRow] <- base::strsplit(xenobioTicsName, ";")[[1]][2]
+    
+    return(data)
 }
 

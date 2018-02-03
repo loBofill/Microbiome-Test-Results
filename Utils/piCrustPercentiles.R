@@ -2,10 +2,10 @@ library(plyr)
 library(dplyr)
 library(formattable)
 
-getPiCrustPercentiles <- function(piCrustResults) {
+getPiCrustPercentiles <- function(piCrustResults, namePosition) {
     piCrustData <- fread('piCrust data.csv', header = TRUE)
     
-    piCrustResults <- getFinalPiCrustResults(piCrustResults, piCrustData)
+    piCrustResults <- getFinalPiCrustResults(piCrustResults, piCrustData, namePosition)
     
     newPiCrustData <- prepareNewPiCrustData(piCrustData, piCrustResults)
     
@@ -14,7 +14,7 @@ getPiCrustPercentiles <- function(piCrustResults) {
 
 evaluatePiCrustPercentiles <- function(piCrustData, sampleNames) {
     samples <- sapply(sampleNames, function(x) which(x == names(piCrustData)))[-1]
-    piCrustPercentiles <- as.data.frame(setNames(replicate(5,numeric(0), simplify = F), sampleNames))
+    piCrustPercentiles <- as.data.frame(setNames(replicate(length(sampleNames), numeric(0), simplify = F), sampleNames))
     for(i in 1:nrow(piCrustData)) {
         samplePercentiles <- c()
         for(j in 1:length(samples)) {
@@ -31,9 +31,10 @@ getSinglePercentile <- function(data, sample) {
                  sd = sd(as.numeric(unlist(data)[-1]))))
 }
 
-getFinalPiCrustResults <- function(piCrustResults, piCrustData) {
+getFinalPiCrustResults <- function(piCrustResults, piCrustData, namePosition) {
     names(piCrustResults) <- c('otuID', sapply(names(piCrustResults)[-1], function(x) 
-        ifelse(length(strsplit(x, "-")[[1]]) > 1, strsplit(x, "-")[[1]][4], x)))
+        ifelse(length(strsplit(x, "-")[[1]]) > 1, strsplit(x, "-")[[1]][namePosition], 
+               ifelse(length(strsplit(x, "\\.")[[1]]) > 1, strsplit(x, "\\.")[[1]][namePosition], x))))
     
     specificResults <- piCrustResults[piCrustResults$otuID %in% piCrustData$`Gene Abundance`, ] %>% 
         select(-KEGG_Pathways)
@@ -49,16 +50,24 @@ getFinalPiCrustResults <- function(piCrustResults, piCrustData) {
 
 prepareNewPiCrustData <- function(piCrustData, piCrustResults) {
 
-    piCrustResults <- cbind(piCrustResultsMain[,1], apply(piCrustResults[,2:5], 2, function(x) as.numeric(unlist(x))))
+    sampleNames <- names(piCrustResults)
+    piCrustResults <- cbind(piCrustResults[,1], 
+                            data.frame(apply(piCrustResults[,2:ncol(piCrustResults)], 2,
+                                  function(x) as.numeric(unlist(x)))))
+    names(piCrustResults) <- sampleNames
 
-    if(sum(names(piCrustResults)[-1] %in% names(piCrustData)) != length(names(piCrustResults)[-1])) {
-        newPiCrustData <- merge(x = piCrustData, y = piCrustResults[, c(1, which(!names(piCrustResults)[-1] %in% names(piCrustData)) + 1)], 
+    if(sum(sampleNames[-1] %in% names(piCrustData)) != 
+       length(sampleNames[-1])) {
+        
+        newPiCrustData <- merge(x = piCrustData, y = piCrustResults[, c(1, which(!sampleNames[-1] %in% names(piCrustData)) + 1)], 
                                 by.x=c('Gene Abundance'), by.y = c('otuID'), all.x = TRUE)
+        
         piCrustDataOrder <- sapply(piCrustData$'Gene Abundance', function(x) 
             which(x == newPiCrustData$`Gene Abundance`))
+        
         newPiCrustData <- newPiCrustData[piCrustDataOrder,]
         
-        write.table(newPiCrustData, file = 'piCrust data.csv', quote = FALSE, sep = ",", row.names = FALSE)
+        fwrite(newPiCrustData, file = 'piCrust data.csv', quote = FALSE, sep = ",", row.names = FALSE)
         return(newPiCrustData)
     }
     else {return(piCrustData)}
