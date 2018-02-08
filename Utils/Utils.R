@@ -7,7 +7,8 @@ source('./Utils/piCrustPercentiles.R')
 loadData <- function(reportId, namePosition) {
     unzip(paste(reportId, ".zip", sep = ""), exdir = reportId)
     
-    setwd(paste(reportId,"/", reportId, "/Organism_Comparison", sep = ""))
+    setwd(reportId)
+    setwd(paste(list.dirs(recursive = FALSE)[1], "/Organism_Comparison", sep = ""))
     phylumFileNumber <- grep("xlsx", list.files("Phylum"))
     familyFileNumber <- grep("xlsx", list.files("Family"))
     generaFileNumber <- grep("xlsx", list.files("Genera"))
