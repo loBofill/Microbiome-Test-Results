@@ -51,9 +51,7 @@ getFinalPiCrustResults <- function(piCrustResults, piCrustData, namePosition) {
 prepareNewPiCrustData <- function(piCrustData, piCrustResults) {
 
     sampleNames <- names(piCrustResults)
-    piCrustResults <- cbind(piCrustResults[,1], 
-                            data.frame(apply(piCrustResults[,2:ncol(piCrustResults)], 2,
-                                  function(x) as.numeric(unlist(x)))))
+    piCrustResults[,-1] <- sapply(piCrustResults[,-1], as.numeric)
     names(piCrustResults) <- sampleNames
 
     if(sum(sampleNames[-1] %in% names(piCrustData)) != 

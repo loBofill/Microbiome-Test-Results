@@ -29,7 +29,7 @@ cleanData <- function(data, namePosition) {
     names(data)[-1] <- sapply(names(data)[-1], function(x) 
         ifelse(length(strsplit(x, "-")[[1]]) > 1, strsplit(x, "-")[[1]][namePosition], 
                ifelse(length(strsplit(x, "\\.")[[1]]) > 1, strsplit(x, "\\.")[[1]][namePosition], x)))
-    data[, -1] <- lapply(data[, -1], as.numeric)
+    data[, -1] <- sapply(data[, -1], as.numeric)
     data$name <- gsub('\\[[0-9]\\]+', '', as.character(data$name))
     return(data)
 }
