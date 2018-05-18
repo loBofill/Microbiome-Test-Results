@@ -8,7 +8,9 @@ getPhylumLevels <- function(phylumData, generaData) {
     
     archaeaBacteriaData <- sapply(filter(generaData, name %in% archaeaGeneras)[,-1], sum)
     archaeaBacteria <- c(name = "Archaea:Bacteria", 
-                         archaeaBacteriaData / (100 - archaeaBacteriaData))
+                         ifelse(length(archaeaBacteriaData) > 0, 
+                         archaeaBacteriaData / (100 - archaeaBacteriaData),
+                         0))
     
     firmicutesBacteroidetes <- c(name = "Firmicutes:Bacteroides", 
                                  phylumDataFiltered[2,-1] / phylumDataFiltered[1,-1])
