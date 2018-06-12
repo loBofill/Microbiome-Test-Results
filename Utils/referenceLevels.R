@@ -6,17 +6,16 @@ getPhylumLevels <- function(phylumData, generaData) {
 
     phylumDataFiltered <- filterAndRound(phylumData, phylums)
     
-    archaeaBacteriaData <- sapply(filter(generaData, name %in% archaeaGeneras)[,-1], sum)
-    archaeaBacteria <- c(name = "Archaea:Bacteria", 
-                         ifelse(length(archaeaBacteriaData) > 0, 
-                         archaeaBacteriaData / (100 - archaeaBacteriaData),
-                         0))
-    print(archaeaBacteria)
+    # archaeaBacteriaData <- sapply(filter(generaData, name %in% archaeaGeneras)[,-1], sum)
+    # archaeaBacteria <- c(name = "Archaea:Bacteria", 
+                         # ifelse(length(archaeaBacteriaData) > 0, 
+                         # archaeaBacteriaData / (100 - archaeaBacteriaData),
+                         # 0))
     
     firmicutesBacteroidetes <- c(name = "Firmicutes:Bacteroides", 
                                  phylumDataFiltered[2,-1] / phylumDataFiltered[1,-1])
     
-    phylumDataFinal <- rbind(phylumDataFiltered, archaeaBacteria, firmicutesBacteroidetes)
+    phylumDataFinal <- rbind(phylumDataFiltered, firmicutesBacteroidetes)
     phylumDataFinal[,-1] <- sapply(phylumDataFinal[,-1], as.numeric)
     
     phylumReferences <- read.xlsx2("VALORS REF.xlsx", sheetIndex = 3, stringsAsFactors = FALSE)
