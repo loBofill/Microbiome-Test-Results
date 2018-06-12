@@ -90,6 +90,7 @@ filterAndRound <- function(data, groupNames) {
 getLevels <- function(data, references) {
     levels <- data[-c(1:nrow(data)),]
     for (i in 1:nrow(data)) {
+        print(data$name[i])
         reference <- as.vector(references %>% filter(name == data$name[i]) %>% select(-name))
         levels[i,] <- c(data[i,1], sapply(data[i,-1], 
                                           function(x) getLevel(x, reference)))
@@ -99,6 +100,7 @@ getLevels <- function(data, references) {
 
 getLevel <- function(observation, reference) {
     for (i in 1:length(reference)) {
+        print(i)
         referenceValue <- as.numeric(reference[1,i])
         if (!is.na(referenceValue) && observation >= referenceValue) {
             i <- i + 1
