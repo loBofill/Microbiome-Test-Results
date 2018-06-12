@@ -11,7 +11,7 @@ getPhylumLevels <- function(phylumData, generaData) {
                          ifelse(length(archaeaBacteriaData) > 0, 
                          archaeaBacteriaData / (100 - archaeaBacteriaData),
                          0))
-    str(archaeaBacteria)
+    print(archaeaBacteria)
     
     firmicutesBacteroidetes <- c(name = "Firmicutes:Bacteroides", 
                                  phylumDataFiltered[2,-1] / phylumDataFiltered[1,-1])
